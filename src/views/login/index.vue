@@ -57,9 +57,27 @@ export default {
   },
   methods: {
     loginD () {
-      this.$refs.myForm.validate(function (isOK) {
+      // ref 被用来给DOM元素或子组件注册引用信息。引用信息会根据父组件的 $refs 对象进行注册。如果在普通的DOM元素上使用，引用信息就是元素; 如果用在子组件上，引用信息就是组件实例
+      // 注意：只要想要在Vue中直接操作DOM元素，就必须用ref属性进行注册
+      this.$refs.myForm.validate((isOK) => {
         if (isOK) {
-          console.log('校验成功')
+          // 只有一切校验通过之后，才会进行网络请求
+          this.$axios({
+            method: 'post',
+            url: '/authorizations',
+            data: this.loginForm
+          }).then(result => {
+            // 将后台返回的token令牌存储到前端缓存中
+            window.localStorage.setItem('user-token', result.data.data.token)
+            // 跳转到主页
+            this.$router.push('/home')
+          }).catch(() => {
+            this.$message({
+              // 消息提示，登陆不成功
+              message: '警告哦，登录不成功',
+              type: 'warning'
+            })
+          })
         }
       })
     }
